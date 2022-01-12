@@ -1,0 +1,3 @@
+*.wav
+src/model
+src/temp.py
