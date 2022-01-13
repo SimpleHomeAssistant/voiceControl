@@ -29,15 +29,21 @@ class VoiceListener:
         while self.is_listening:
             # read 0.5 seconds of data each time
             chunk = config.chunk
-            data = self.stream.read(config.chunk, exception_on_overflow = False)
-            self.cache.append(data)
-            is_active = self.detector.detectActivity(data)
+            frames = []
+            for i in range(0, int(config.rate / config.chunk * 0.5)):
+                data = self.stream.read(chunk, exception_on_overflow = False)
+                frames.append(data)
+            self.cache.append(b''.join(frames))
+            
+            is_active = self.detector.detectActivity(frames)
             if is_active:
                 self.voice_inactivity_counter = 0
             else:
                 self.voice_inactivity_counter += 1
             if self.voice_inactivity_counter > self.max_inactivity_count:
-                self.callback(self.cache)
+                if len(self.cache)>0:
+                    self.logger.info("Voice detected, sending data to callback, cache size: %d", len(self.cache))
+                    self.callback(self.cache)
                 self.cache = []
                 self.voice_inactivity_counter = 0
 
