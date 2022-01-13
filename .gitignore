@@ -1,3 +1,5 @@
 *.wav
 src/model
 src/temp.py
+*.pyc
+__pycache__
