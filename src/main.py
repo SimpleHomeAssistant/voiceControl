@@ -1,20 +1,28 @@
+import config
 import pyaudio
-from vosk import Model, KaldiRecognizer
+from controlClient import ControlClient
+from recognizer import Recognizer
+from voiceListener import VoiceListener
 from threading import Thread
 import time
-
-def test():
-    thread1 = Thread(target=fun, args=(10,20))
-    thread2= Thread(target=fun, args=(20,30))
-    thread1.start()
-    thread2.start()
+import logging
 
 
-def fun(start:int, end:int):
-    for i in range(start, end):
-        print(i)
-        time.sleep(1)
-        
+client=ControlClient(config.control_server_ip,config.control_server_port)
+recognizer=Recognizer(config.model_directory)
+logger = logging.getLogger(__name__)
+
+def listener_callback(data):
+    logger.debug("listener_callback")
+    recognizer.recognize_async(data,client.send_command)
+
+def main():
+    logger.debug("application starting")
+    logging.basicConfig(level=logging.DEBUG)
+    listener = VoiceListener(listener_callback)
+    logger.debug("starting listener")
+    listener.listen_async()
+    logger.debug("listener started")
 
 if __name__ == "__main__":
-    test()
+    main()

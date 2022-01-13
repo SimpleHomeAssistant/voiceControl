@@ -2,6 +2,7 @@
 # it also tries to identify the voice, when a possible active voice is detected, it will
 # call a callback function and send the raw data to the callback function via the parameter.
 
+from threading import Thread
 import pyaudio
 import config
 from activityDetector import ActivityDetector
@@ -11,14 +12,13 @@ class VoiceListener:
     def __init__(self, callback):
         self.callback = callback
         self.p = pyaudio.PyAudio()
-        self.stream = self.p.open(format=config.format, channels=config.channels, rate=config.rate, input=True, frames_per_buffer=config.chunk)
+        self.stream = self.p.open(format=config.format, channels=config.channels, rate=config.frame_rate, input=True, frames_per_buffer=config.chunk)
         self.is_listening = False
         self.is_stopped = False
         self.is_paused = False
         self.cache = []
-        self.voiceIdleTime = config.voiceIdleTime
-        self.detector = ActivityDetector(config.activityDetectionThreshold)
-        self.max_inactivity_count = config.voiceIdleTime * (config.rate / config.chunk)
+        self.detector = ActivityDetector(config.activity_detection_threshold)
+        self.max_inactivity_count = config.voiceIdleTime / 0.5 # 0.5 seconds per count
         self.voice_inactivity_counter = 0
         self.logger = logging.getLogger(__name__)
         self.logger.info("VoiceListener initialized")
@@ -30,7 +30,7 @@ class VoiceListener:
             # read 0.5 seconds of data each time
             chunk = config.chunk
             frames = []
-            for i in range(0, int(config.rate / config.chunk * 0.5)):
+            for i in range(0, int(config.frame_rate / config.chunk * 0.5)):
                 data = self.stream.read(chunk, exception_on_overflow = False)
                 frames.append(data)
             self.cache.append(b''.join(frames))
@@ -47,6 +47,9 @@ class VoiceListener:
                 self.cache = []
                 self.voice_inactivity_counter = 0
 
+    def listen_async(self):
+        th = Thread(target=self.listen)
+        th.start()
 
     def stop(self):
         self.is_listening = False

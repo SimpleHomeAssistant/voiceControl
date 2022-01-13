@@ -17,11 +17,11 @@ class ControlClient:
         :param command: command to be sent
         """
         self.logger.debug("sending command: %s", command)
-        url = "http://" + self.host + ":" + str(self.port) + "/command/" + command
-        try:
-            response = requests.get(url)
-            self.logger.debug("response: %s", response.text)
-        except Exception as e:
-            self.logger.error("send command error: %s", e)
-            return False
-        return True
+        # url = "http://" + self.host + ":" + str(self.port) + "/command/" + command
+        # try:
+        #     response = requests.get(url)
+        #     self.logger.debug("response: %s", response.text)
+        # except Exception as e:
+        #     self.logger.error("send command error: %s", e)
+        #     return False
+        # return True
