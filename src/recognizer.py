@@ -3,6 +3,7 @@ from vosk import Model, KaldiRecognizer
 import logging
 from threading import Thread
 import config
+import wave
 
 class Recognizer:
     """
@@ -13,22 +14,25 @@ class Recognizer:
         self.rec = KaldiRecognizer(self.model,config.frame_rate)
         self.logger = logging.getLogger(__name__)
         
-    def recognize(self, data):
+    def recognize(self, wave_object):
         """
         recognize the voice command
         :param data: audio data frames
         :return: the recognized command
         """
         self.logger.debug("recognizing")
-        self.logger.debug("data count: %d", len(data))
         try:
-            for frame in data:
-                self.rec.AcceptWaveform(frame)
-            result = self.rec.FinalResult()
-            self.logger.debug("recognized result: %s", result)
-            return result
+            wf = wave.open(wave_object, "rb")
+            while True:
+                data = wf.readframes(4000)
+                if len(data) == 0:
+                    break
+                self.rec.AcceptWaveform(data)
+                result = self.rec.Result()
+                self.logger.debug("recognized: %s", result)
+                return result
         except Exception as e:
-            self.logger.error("recognize error: %s", e)
+            self.logger.error("recognize error: %s, %s", type(e), e)
             return ""
     
     def recognize_async(self, data, callback):
