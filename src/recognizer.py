@@ -28,9 +28,10 @@ class Recognizer:
                 if len(data) == 0:
                     break
                 self.rec.AcceptWaveform(data)
-                result = self.rec.Result()
-                self.logger.debug("recognized: %s", result)
-                return result
+            result = self.rec.FinalResult()
+            self.rec.Reset()
+            self.logger.debug("recognized: %s", result)
+            return result
         except Exception as e:
             self.logger.error("recognize error: %s, %s", type(e), e)
             return ""
