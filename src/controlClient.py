@@ -1,27 +1,44 @@
-import requests
 import logging
+from time import sleep
+import paho.mqtt.client as mqtt
 
 class ControlClient:
     """
-    control client is used for sending command to the control center via http
+    control client is used for publish MQTT message to the broker
     """
-    def __init__(self, host, port):
-        self.host = host
-        self.port = port
+    def __init__(self, broker_address, port):
+        """
+        initialize control client
+        """
         self.logger = logging.getLogger(__name__)
-        self.logger.info("ControlClient initialized")
+        # init paho mqtt client
+        self.client = mqtt.Client()
+        self.client.on_connect = self.on_connect
+        self.client.on_message = self.on_message
+        self.client.connect(host =broker_address, port = port, keepalive = 60)
+        self.client.loop_start()
+        self.client.subscribe("$SYS/#")
+
     
+    def on_connect(self, client, userdata, flags, rc):
+        """
+        callback for mqtt client on_connect
+        """
+        self.logger.info("Connected with result code "+str(rc))
+        # client.subscribe("test")
+    
+    def on_message(self, client, userdata, msg):
+        """
+        callback for mqtt client on_message
+        """
+        self.logger.info(msg.topic+" "+str(msg.payload))
+
+
     def send_command(self, command):
         """
-        send command to the control center
-        :param command: command to be sent
+        send command to the broker
         """
-        self.logger.debug("sending command: %s", command)
-        # url = "http://" + self.host + ":" + str(self.port) + "/command/" + command
-        # try:
-        #     response = requests.get(url)
-        #     self.logger.debug("response: %s", response.text)
-        # except Exception as e:
-        #     self.logger.error("send command error: %s", e)
-        #     return False
-        # return True
+        topic = "test"
+        self.logger.debug("send command %s to topic %s" % (command, topic))
+        self.client.publish(topic, command)
+

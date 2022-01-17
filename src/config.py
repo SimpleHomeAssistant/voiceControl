@@ -12,5 +12,7 @@ voiceIdleTime = 1 # seconds
 activity_detection_threshold = 1300 # this value is tested in my room, it may still need adjustment
 model_directory = os.path.join(os.path.dirname(__file__), "model")
 
-control_server_ip = "127.0.0.1"	
-control_server_port = 2133
+# MQTT config
+mqtt_broker_address = "49.232.13.66"
+mqtt_broker_port = 1883
+

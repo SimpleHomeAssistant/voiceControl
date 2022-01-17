@@ -23,14 +23,16 @@ class Recognizer:
         self.logger.debug("recognizing")
         try:
             wf = wave.open(wave_object, "rb")
+            count=0
             while True:
+                count+=1
                 data = wf.readframes(4000)
                 if len(data) == 0:
                     break
                 self.rec.AcceptWaveform(data)
             result = self.rec.FinalResult()
             self.rec.Reset()
-            self.logger.debug("recognized: %s", result)
+            self.logger.debug("recognized: %s, %d times frame read", result,count)
             return result
         except Exception as e:
             self.logger.error("recognize error: %s, %s", type(e), e)

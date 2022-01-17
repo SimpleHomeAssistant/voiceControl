@@ -40,6 +40,7 @@ class VoiceListener:
         self.logger.debug("start listening")
         self.is_listening = True
         self.reset_wave()
+        is_recording = False
         while self.is_listening:
             # read 0.5 seconds of data each time
             chunk = config.chunk
@@ -47,22 +48,28 @@ class VoiceListener:
             for i in range(0, int(config.frame_rate / config.chunk * 0.5)):
                 data = self.stream.read(chunk, exception_on_overflow = False)
                 frames.append(data)
-                self.wave_stream.writeframes(data)
-            
             is_active = self.detector.detectActivity(frames)
             if is_active:
                 self.voice_inactivity_counter = 0
                 self.has_data = True
+                is_recording = True
             else:
                 self.voice_inactivity_counter += 1
-            if self.voice_inactivity_counter > self.max_inactivity_count and self.has_data:
-                self.logger.info("activity detected, sending data for recognition")	
-                self.wave_stream.close()
-                self.wave_file.seek(0)
-                self.callback(self.wave_file)
-                    
-                self.reset_wave()
-                self.voice_inactivity_counter = 0
+            
+            if is_recording:
+                self.wave_stream.writeframes(b''.join(frames))
+
+            if self.voice_inactivity_counter > self.max_inactivity_count:
+                is_recording = False
+                if self.has_data:
+                    self.logger.info("activity detected, sending data for recognition")	
+                    self.wave_stream.close()
+                    self.wave_file.seek(0)
+                    self.callback(self.wave_file)
+                        
+                    self.reset_wave()
+                    self.voice_inactivity_counter = 0
+
 
     def listen_async(self):
         th = Thread(target=self.listen)
