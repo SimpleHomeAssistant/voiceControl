@@ -17,7 +17,6 @@ class ControlClient:
         self.client.on_message = self.on_message
         self.client.connect(host =broker_address, port = port, keepalive = 60)
         self.client.loop_start()
-        self.client.subscribe("$SYS/#")
 
     
     def on_connect(self, client, userdata, flags, rc):
@@ -25,7 +24,6 @@ class ControlClient:
         callback for mqtt client on_connect
         """
         self.logger.info("Connected with result code "+str(rc))
-        # client.subscribe("test")
     
     def on_message(self, client, userdata, msg):
         """
@@ -38,7 +36,7 @@ class ControlClient:
         """
         send command to the broker
         """
-        topic = "test"
+        topic = "sha/voice/recognized"
         self.logger.debug("send command %s to topic %s" % (command, topic))
         self.client.publish(topic, command)
 
