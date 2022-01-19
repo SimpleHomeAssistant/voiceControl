@@ -5,7 +5,7 @@ from voiceListener import VoiceListener
 import logging
 
 
-client=ControlClient(config.mqtt_broker_address,config.mqtt_broker_port)
+client=ControlClient(config.mqtt_broker_address,config.mqtt_broker_port,config.mqtt_voice_topic)
 recognizer=Recognizer(config.model_directory)
 logger = logging.getLogger(__name__)
 

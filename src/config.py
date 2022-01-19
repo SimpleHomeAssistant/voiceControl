@@ -15,4 +15,5 @@ model_directory = os.path.join(os.path.dirname(__file__), "model")
 # MQTT config
 mqtt_broker_address = "49.232.13.66"
 mqtt_broker_port = 1883
+mqtt_voice_topic = "sha/voice/recognized"
 

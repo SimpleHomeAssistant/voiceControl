@@ -6,11 +6,12 @@ class ControlClient:
     """
     control client is used for publish MQTT message to the broker
     """
-    def __init__(self, broker_address, port):
+    def __init__(self, broker_address, port,voice_topic):
         """
         initialize control client
         """
         self.logger = logging.getLogger(__name__)
+        self.voice_topic = voice_topic
         # init paho mqtt client
         self.client = mqtt.Client()
         self.client.on_connect = self.on_connect
@@ -36,7 +37,7 @@ class ControlClient:
         """
         send command to the broker
         """
-        topic = "sha/voice/recognized"
+        topic = self.voice_topic
         self.logger.debug("send command %s to topic %s" % (command, topic))
         self.client.publish(topic, command)
 
