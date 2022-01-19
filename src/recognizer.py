@@ -4,6 +4,7 @@ import logging
 from threading import Thread
 import config
 import wave
+import json
 
 class Recognizer:
     """
@@ -33,7 +34,8 @@ class Recognizer:
             result = self.rec.FinalResult()
             self.rec.Reset()
             self.logger.debug("recognized: %s, %d times frame read", result,count)
-            return result
+            obj = json.loads(result)
+            return obj["text"]
         except Exception as e:
             self.logger.error("recognize error: %s, %s", type(e), e)
             return ""
