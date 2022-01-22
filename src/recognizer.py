@@ -1,6 +1,7 @@
 from asyncio.log import logger
 from vosk import Model, KaldiRecognizer
 import logging
+import threading
 from threading import Thread
 import config
 import wave
@@ -14,6 +15,7 @@ class Recognizer:
         self.model = Model(model_path)
         self.rec = KaldiRecognizer(self.model,config.frame_rate)
         self.logger = logging.getLogger(__name__)
+        self.lock = threading.Lock()
         
     def recognize(self, wave_object):
         """
@@ -21,7 +23,10 @@ class Recognizer:
         :param data: audio data frames
         :return: the recognized command
         """
+        
+        self.lock.acquire()
         self.logger.debug("recognizing")
+        recognized_text= None
         try:
             wf = wave.open(wave_object, "rb")
             count=0
@@ -35,10 +40,13 @@ class Recognizer:
             self.rec.Reset()
             self.logger.debug("recognized: %s, %d times frame read", result,count)
             obj = json.loads(result)
-            return obj["text"]
+            recognized_text = obj["text"]
         except Exception as e:
             self.logger.error("recognize error: %s, %s", type(e), e)
-            return ""
+        finally:
+            self.lock.release()
+        
+        return recognized_text
     
     def recognize_async(self, data, callback):
         """
